@@ -490,15 +490,6 @@ class Subnets extends Common_functions {
 			$this->Result->show("danger", _("Error: ").$e->getMessage());
 			return false;
 		}
-		# save to subnets cache
-		if(sizeof($subnets)>0) {
-			foreach($subnets as $subnet) {
-    			// remove fake subnet_int field
-    			unset($subnet->subnet_int);
-    			// save
-				$this->cache_write ("subnets", $subnet->id, $subnet);
-			}
-		}
 		# result
 		return sizeof($subnets)>0 ? (array) $subnets : array();
 	}
@@ -627,13 +618,6 @@ class Subnets extends Common_functions {
 			$this->Result->show("danger", _("Error: ").$e->getMessage());
 			return false;
 		}
-		# save to subnets cache
-		if(sizeof($subnets)>0) {
-			foreach($subnets as $subnet) {
-    			unset($subnet->subnet_int);
-                $this->cache_write ("subnets", $subnet->id, $subnet);
-			}
-		}
 		# result
 		return sizeof($subnets)>0 ? (array) $subnets : false;
 	}
@@ -671,16 +655,7 @@ class Subnets extends Common_functions {
     			$this->Result->show("danger", _("Error: ").$e->getMessage());
     			return false;
     		}
-    		// check
-    		if (sizeof($subnets)>0) {
-        		foreach ($subnets as $s) {
-                    $this->cache_write ("subnets", $s->id, $s);
-        		}
-        		return $subnets;
-    		}
-    		else {
-        		return false;
-    		}
+    		return sizeof($subnets)>0 ? (array) $subnets : false;
     	}
 	}
 
@@ -724,13 +699,6 @@ class Subnets extends Common_functions {
 		catch (Exception $e) {
 			$this->Result->show("danger", _("Error: ").$e->getMessage());
 			return false;
-		}
-		# save to subnets cache
-		if(sizeof($subnets)>0) {
-			foreach($subnets as $subnet) {
-    			unset($subnet->subnet_int);
-                $this->cache_write ("subnets", $subnet->id, $subnet);
-			}
 		}
 		# result
 		return sizeof($subnets)>0 ? (array) $subnets : false;
@@ -984,18 +952,7 @@ class Subnets extends Common_functions {
 	public function fetch_subnet_slaves ($subnetId, $result_fields = "*") {
     	// fetch
 		$slaves = $this->fetch_multiple_objects ("subnets", "masterSubnetId", $subnetId, "subnet_int", true, false, $result_fields);
-		# save to subnets cache
-        if ($slaves!==false) {
-			foreach($slaves as $slave) {
-    			unset($slave->subnet_int);
-                $this->cache_write ("subnets", $slave->id, $slave);
-			}
-			return $slaves;
-		}
-		else {
-    		# no subnets
-    		return false;
-		}
+		return sizeof($slaves)>0 ? (array) $slaves : false;
 	}
 
 	/**
@@ -1021,10 +978,6 @@ class Subnets extends Common_functions {
 			if (!$slaves) { return; }
 
 			foreach($slaves as $slave) {
-				# save to subnets cache
-				unset($slave->subnet_int);
-				$this->cache_write("subnets", $slave->id, $slave);
-
 				# save to full array of slaves
 				$this->slaves_full[$slave->id] = $slave;
 				$this->slaves[] = (int) $slave->id;

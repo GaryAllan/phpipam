@@ -27,31 +27,6 @@ class Common_functions  {
 	 */
 	public $json_error = false;
 
-	/**
-	 * Cache file to store all results from queries to
-	 *
-	 *  structure:
-	 *
-	 *      [table][index] = (object) $content
-	 *
-	 *
-	 * (default value: array())
-	 *
-	 * @var array
-	 * @access public
-	 */
-	public $cache = array();
-
-	/**
-	 * cache_check_exceptions
-	 *
-	 * (default value: array())
-	 *
-	 * @var array
-	 * @access private
-	 */
-	private $cache_check_exceptions = array();
-
     /**
      * Default font
      *
@@ -175,12 +150,6 @@ class Common_functions  {
 			$this->Result->show("danger", _("Error: ").$e->getMessage());
 			return false;
 		}
-		# save
-		if (sizeof($res)>0) {
-    		foreach ($res as $r) {
-        		$this->cache_write ($table, $r->id, $r);
-    		}
-		}
 		# result
 		return sizeof($res)>0 ? $res : false;
 	}
@@ -208,35 +177,16 @@ class Common_functions  {
 		# null method
 		$method = is_null($method) ? "id" : $this->Database->escape($method);
 
-		# check cache
-		$cached_item = $this->cache_check($table, $value);
-		if($cached_item!==false) {
-			return $cached_item;
+		try { $res = $this->Database->getObjectQuery("SELECT * from `$table` where `$method` = ? limit 1;", array($value)); }
+		catch (Exception $e) {
+			$this->Result->show("danger", _("Error: ").$e->getMessage());
+			return false;
 		}
-		else {
-			try { $res = $this->Database->getObjectQuery("SELECT * from `$table` where `$method` = ? limit 1;", array($value)); }
-			catch (Exception $e) {
-				$this->Result->show("danger", _("Error: ").$e->getMessage());
-				return false;
-			}
-			# save to cache array
-			if(sizeof($res)>0) {
-    			// set identifier
-    			$method = $this->cache_set_identifier ($table);
-    			// save
-    			$this->cache_write ($table, $res->{$method}, $res);
-				return $res;
-			}
-			else {
-				return false;
-			}
-		}
+		return sizeof($res)>0 ? $res : false;
 	}
 
 	/**
 	 * Fetches multiple objects in specified table in database
-	 *
-	 *	doesnt cache
 	 *
 	 * @access public
 	 * @param mixed $table
@@ -256,12 +206,6 @@ class Common_functions  {
 			catch (Exception $e) {
 				$this->Result->show("danger", _("Error: ").$e->getMessage());
 				return false;
-			}
-			# save to cach
-			if (sizeof($res)>0) {
-    			foreach ($res as $r) {
-        			$this->cache_write ($table, $r->id, $r);
-    			}
 			}
 			# result
 			return sizeof($res)>0 ? $res : false;
@@ -347,7 +291,6 @@ class Common_functions  {
 			}
 		}
 		else {
-			# cache check
 			if($this->settings === null) {
 				try { $settings = $this->Database->getObject("settings", 1); }
 				catch (Exception $e) { $this->Result->show("danger", _("Database error: ").$e->getMessage()); }
@@ -369,93 +312,6 @@ class Common_functions  {
 	public function settings () {
 		return $this->get_settings();
 	}
-
-
-    /**
-     * Write result to cache.
-     *
-     * @access protected
-     * @param mixed $table
-     * @param mixed $id
-     * @param mixed $object
-     * @return void
-     */
-    protected function cache_write ($table, $id, $object) {
-        // get method
-        $identifier = $this->cache_set_identifier ($table);
-        // check if cache is already set, otherwise save
-        if ($this->cache_check_exceptions!==false) {
-            if (!isset($this->cache[$table][$identifier][$id])) {
-                $this->cache[$table][$identifier][$id] = (object) $object;
-                // add ip ?
-                $ip_check = $this->cache_check_add_ip($table);
-                if ($ip_check!==false) {
-                    $this->cache[$table][$identifier][$id]->ip = $this->transform_address ($object->{$ip_check}, "dotted");
-                }
-            }
-        }
-    }
-
-    /**
-     * Check if caching is not needed
-     *
-     * @access protected
-     * @param mixed $table
-     * @return bool
-     */
-    protected function cache_check_exceptions ($table) {
-        // define
-        $exceptions = array("deviceTypes");
-        // check
-        return in_array($table, $exceptions) ? true : false;
-    }
-
-    /**
-     * Cehck if ip is to be added to result
-     *
-     * @access protected
-     * @param mixed $table
-     * @return bool|mixed
-     */
-    protected function cache_check_add_ip ($table) {
-        // define
-        $ip_tables = array("subnets"=>"subnet", "ipaddresses"=>"ip_addr");
-        // check
-        return array_key_exists ($table, $ip_tables) ? $ip_tables[$table] : false;
-    }
-
-    /**
-     * Set identifier for table - exceptions.
-     *
-     * @access protected
-     * @param mixed $table
-     * @return mixed
-     */
-    protected function cache_set_identifier ($table) {
-        // vlan and subnets have different identifiers
-        if ($table=="vlans")        { return "vlanId"; }
-        elseif ($table=="vrf")      { return "vrfId"; }
-        else                        { return "id"; }
-    }
-
-    /**
-     * Checks if object alreay exists in cache..
-     *
-     * @access protected
-     * @param mixed $table
-     * @param mixed $id
-     * @return bool|array
-     */
-    protected function cache_check ($table, $id) {
-        // get method
-        $method = $this->cache_set_identifier ($table);
-        // check if cache is already set, otherwise return false
-        if (isset($this->cache[$table][$method][$id]))  { return (object) $this->cache[$table][$method][$id]; }
-        else                                            { return false; }
-    }
-
-
-
 
 	/**
 	 * Sets debugging
