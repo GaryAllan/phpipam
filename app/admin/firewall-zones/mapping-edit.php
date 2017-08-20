@@ -63,6 +63,7 @@ if ($_POST['action'] != 'add') {
 			<select name="zoneId" class="mappingZoneInformation form-control input-sm input-w-auto input-max-200"  <?php print $readonly; ?>>
 			<option value="0"><?php print _('Select a firewall zone'); ?></option>
 			<?php
+			if ($firewallZones !== false) {
 			foreach ($firewallZones as $zone) {
 				if ($zone->id == $mapping->id) 	{
 					if($zone->description) 	{ print '<option value="'.$zone->id.'" selected>'.$zone->zone.' ('.$zone->description.')</option>'; }
@@ -70,6 +71,7 @@ if ($_POST['action'] != 'add') {
 				else {
 					if($zone->description) 	{ print '<option value="'.$zone->id.'">'.		  $zone->zone.' ('.$zone->description.')</option>'; }
 					else 					{ print '<option value="'.$zone->id.'">'.		  $zone->zone.'</option>'; }}
+			}
 			}
 			?>
 			</select>

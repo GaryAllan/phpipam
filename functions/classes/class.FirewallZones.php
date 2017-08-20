@@ -237,7 +237,7 @@ class FirewallZones extends Common_functions {
 						FROM firewallZoneMapping
 						RIGHT JOIN firewallZones ON zoneId = firewallZones.id
 						LEFT JOIN devices ON deviceId = devices.id
-						having  deviceId is not NULL order by firewallZones.id ASC;');}
+						WHERE firewallZoneMapping.deviceId IS NOT NULL ORDER BY firewallZones.id ASC;');}
 		# throw exception
 		catch (Exception $e) {$this->Result->show("danger", _("Database error: ").$e->getMessage());}
 
@@ -256,7 +256,7 @@ class FirewallZones extends Common_functions {
 						vlans.name AS vlanName
 						FROM firewallZoneSubnet
 						LEFT JOIN subnets ON subnetId = subnets.id
-						LEFT JOIN vlans ON subnets.vlanId = vlans.vlanId ORDER BY subnet ASC;');}
+						LEFT JOIN vlans ON subnets.vlanId = vlans.vlanId ORDER BY subnets.subnet ASC;');}
 		# throw exception
 		catch (Exception $e) {$this->Result->show("danger", _("Database error: ").$e->getMessage());}
 
@@ -310,7 +310,7 @@ class FirewallZones extends Common_functions {
 						FROM firewallZoneMapping
 						RIGHT JOIN firewallZones ON zoneId = firewallZones.id
 						LEFT JOIN devices ON deviceId = devices.id
-						having  deviceId is not NULL AND mappingId = ?;', $id);}
+						WHERE firewallZoneMapping.deviceId IS NOT NULL AND firewallZoneMapping.id = ?;', $id);}
 		# throw exception
 		catch (Exception $e) {$this->Result->show("danger", _("Database error: ").$e->getMessage());}
 
@@ -330,7 +330,7 @@ class FirewallZones extends Common_functions {
 						FROM firewallZoneSubnet
 						LEFT JOIN subnets ON subnetId = subnets.id
 						LEFT JOIN vlans ON subnets.vlanId = vlans.vlanId
-						HAVING zoneId = ? ORDER BY subnet ASC;', $mapping[0]->id);}
+						WHERE firewallZoneSubnet.zoneId = ? ORDER BY subnets.subnet ASC;', $mapping[0]->id);}
 		# throw exception
 		catch (Exception $e) {$this->Result->show("danger", _("Database error: ").$e->getMessage());}
 
@@ -408,7 +408,7 @@ class FirewallZones extends Common_functions {
 						LEFT JOIN firewallZoneSubnet on firewallZoneMapping.zoneId = firewallZoneSubnet.zoneId
 						LEFT JOIN devices ON firewallZoneMapping.deviceId = devices.id
 						LEFT JOIN subnets ON firewallZoneSubnet.subnetId = subnets.id
-						HAVING firewallZoneSubnet.subnetId = ?;', $id);}
+						WHERE firewallZoneSubnet.subnetId = ?;', $id);}
 		# throw exception
 		catch (Exception $e) {$this->Result->show("danger", _("Database error: ").$e->getMessage());}
 		if ($info) {
@@ -459,7 +459,7 @@ class FirewallZones extends Common_functions {
 						vlans.name AS vlanName
 						FROM firewallZoneSubnet
 						LEFT JOIN subnets ON firewallZoneSubnet.subnetId = subnets.id
-						LEFT JOIN vlans ON subnets.vlanId = vlans.vlanId ORDER BY subnet ASC;');}
+						LEFT JOIN vlans ON subnets.vlanId = vlans.vlanId ORDER BY subnets.subnet ASC;');}
 		# throw exception
 		catch (Exception $e) {$this->Result->show("danger", _("Database error: ").$e->getMessage());}
 
@@ -519,7 +519,8 @@ class FirewallZones extends Common_functions {
 						vlans.name AS vlanName
 						FROM firewallZoneSubnet
 						LEFT JOIN subnets ON firewallZoneSubnet.subnetId = subnets.id
-						LEFT JOIN vlans ON subnets.vlanId = vlans.vlanId HAVING zoneId = ? ORDER BY subnet ASC;', $id);}
+						LEFT JOIN vlans ON subnets.vlanId = vlans.vlanId
+						WHERE firewallZoneSubnet.zoneId = ? ORDER BY subnets.subnet ASC;', $id);}
 		# throw exception
 		catch (Exception $e) {$this->Result->show("danger", _("Database error: ").$e->getMessage());}
 
@@ -628,7 +629,8 @@ class FirewallZones extends Common_functions {
 						vlans.name AS vlanName
 						FROM firewallZoneSubnet
 						LEFT JOIN subnets ON firewallZoneSubnet.subnetId = subnets.id
-						LEFT JOIN vlans ON subnets.vlanId = vlans.vlanId HAVING zoneId = ? ORDER BY subnet ASC;', $id);}
+						LEFT JOIN vlans ON subnets.vlanId = vlans.vlanId
+						WHERE firewallZoneSubnet.zoneId = ? ORDER BY subnets.subnet ASC;', $id);}
 		# throw exception
 		catch (Exception $e) {$this->Result->show("danger", _("Database error: ").$e->getMessage());}
 
