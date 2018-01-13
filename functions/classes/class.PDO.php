@@ -899,6 +899,20 @@ class Database_PDO extends DB {
 	 */
 	protected $debug = false;
 
+	/**
+	 * Cache file to store all results from queries to
+	 *
+	 *  structure:
+	 *
+	 *      [table][index] = (object) $content
+	 *
+	 *
+	 * (default value: array())
+	 *
+	 * @var array
+	 * @access public
+	 */
+	public $cache = array();
 
 
 
