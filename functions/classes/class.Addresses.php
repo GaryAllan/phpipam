@@ -692,7 +692,7 @@ class Addresses extends Common_functions {
                         try {
                         	$phpipam_mail->Php_mailer->setFrom($mail_settings->mAdminMail, $mail_settings->mAdminName);
                         	//add all admins to CC
-                        	$recipients = $this->changelog_mail_get_recipients ($subnet->id);
+                        	$recipients = $this->Log->changelog_mail_get_recipients ($subnet->id);
 
                         	if ($recipients!==false) {
                         		foreach($recipients as $a) {

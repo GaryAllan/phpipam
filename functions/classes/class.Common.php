@@ -269,53 +269,6 @@ class Common_functions  {
 		return $cnt;
 	}
 
-
-	/**
-	 * Get all admins that are set to receive changelog
-	 *
-	 * @access public
-	 * @param bool|mixed $subnetId
-	 * @return bool|array
-	 */
-	public function changelog_mail_get_recipients ($subnetId = false) {
-    	// fetch all users with mailNotify
-        $notification_users = $this->fetch_multiple_objects ("users", "mailChangelog", "Yes", "id", true);
-        // recipients array
-        $recipients = array();
-        // any ?
-        if (is_array($notification_users)) {
-        	if(sizeof($notification_users)>0) {
-	         	// if subnetId is set check who has permissions
-	        	if (isset($subnetId)) {
-	             	foreach ($notification_users as $u) {
-	                	// inti object
-	                	$Subnets = new Subnets ($this->Database);
-	                	//check permissions
-	                	$subnet_permission = $Subnets->check_permission($u, $subnetId);
-	                	// if 3 than add
-	                	if ($subnet_permission==3) {
-	                    	$recipients[] = $u;
-	                	}
-	            	}
-	        	}
-	        	else {
-	            	foreach ($notification_users as $u) {
-	                	if($u->role=="Administrator") {
-	                    	$recipients[] = $u;
-	                	}
-	            	}
-	        	}
-	        }
-        	return sizeof($recipients)>0 ? $recipients : false;
-        }
-        else {
-            return false;
-        }
-	}
-
-
-
-
 	/**
 	 * fetches settings from database
 	 *

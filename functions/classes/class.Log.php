@@ -1772,6 +1772,46 @@ class Logging extends Common_functions {
 	 *	--------------------------------
 	 */
 
+	 /**
+	  * Get all admins that are set to receive changelog
+	  *
+	  * @access public
+	  * @param bool|mixed $subnetId
+	  * @return bool|array
+	  */
+	 public function changelog_mail_get_recipients ($subnetId = false) {
+		$this->init_internal_class_objects();
+
+		$cached_item = $this->cache_check('notification_users', '');
+		if($cached_item!==false) {
+			$notification_users = (array) $cached_item;
+		} else {
+			// fetch all users with mailNotify
+			$notification_users = $this->fetch_multiple_objects ("users", "mailChangelog", "Yes", "id", true);
+			if (!is_array($notification_users)) $notification_users = array();
+
+			$this->cache_write('notification_users', '', (object) $notification_users);
+		}
+
+		$recipients = array();
+
+		// if subnetId is set check who has permissions
+		if (isset($subnetId)) {
+			foreach ($notification_users as $u) {
+				//check permissions
+				$subnet_permission = $this->Subnets->check_permission($u, $subnetId);
+				// if 3 than add
+				if ($subnet_permission==3) $recipients[] = $u;
+			}
+		} else {
+			foreach ($notification_users as $u) {
+				if($u->role=="Administrator") $recipients[] = $u;
+			}
+		}
+
+		return sizeof($recipients)>0 ? $recipients : false;
+	}
+
 	/**
 	 * Send mail on new changelog
 	 *
