@@ -326,6 +326,16 @@ class Logging extends Common_functions {
 		$this->set_log_type ();
 	}
 
+	/**
+	 * Setup internal class objects (Avoiding circular references in __construct)
+	 * @return void
+	 */
+	private function init_internal_class_objects() {
+		if (!is_object($this->Addresses)) $this->Addresses = new Addresses ($this->Database);
+		if (!is_object($this->Subnets))   $this->Subnets   = new Subnets ($this->Database);
+		if (!is_object($this->Sections))  $this->Sections  = new Sections ($this->Database);
+		if (!is_object($this->Tools))     $this->Tools     = new Tools ($this->Database);
+	}
 
 
 
@@ -746,11 +756,7 @@ class Logging extends Common_functions {
 
 		// check if syslog globally enabled and write log
 	    if($this->settings->enableChangelog==1) {
-		    # get user details and initialize required objects
-		    if (!is_object($this->Addresses)) $this->Addresses = new Addresses ($this->Database);
-		    if (!is_object($this->Subnets))   $this->Subnets   = new Subnets ($this->Database);
-		    if (!is_object($this->Sections))  $this->Sections  = new Sections ($this->Database);
-		    if (!is_object($this->Tools))     $this->Tools     = new Tools ($this->Database);
+		    $this->init_internal_class_objects ();
 
 		    # unset unneeded values and format
 		    $this->changelog_unset_unneeded_values ();
@@ -1616,13 +1622,11 @@ class Logging extends Common_functions {
 	 * @return void
 	 */
 	public function fetch_subnet_addresses_changelog_recursive ($subnetId, $limit = 50) {
-	    # get all addresses ids
-	    $ips  = array();
-	    if (!is_object($this->Addresses)) $this->Addresses = new Addresses ($this->Database);
+	    $this->init_internal_class_objects ();
 	    $ips = $this->Addresses->fetch_subnet_addresses_recursive ($subnetId, false);
 
 	    # fetch changelog for IPs
-	    if(sizeof($ips) > 0) {
+	    if(is_array($ips) && sizeof($ips) > 0) {
 		    # query
 		    $query  = "select
 		    			`u`.`real_name`,`o`.`id`,`o`.`ip_addr`,`o`.`description`,`o`.`id`,`o`.`subnetId`,`c`.`caction`,`c`.`cresult`,`c`.`cdate`,`c`.`cdiff`
@@ -1717,7 +1721,7 @@ class Logging extends Common_functions {
     	if(!is_numeric($subnetId))     { $this->Result->show("danger", "Invalid subnet Id", true);	return false; }
 
 		# fetch all slave subnet ids
-		if (!is_object($this->Subnets)) $this->Subnets = new Subnets ($this->Database);
+		$this->init_internal_class_objects ();
 		$this->Subnets->reset_subnet_slaves_recursive ();
 		$this->Subnets->fetch_subnet_slaves_recursive ($subnetId);
 		# remove master subnet ID
@@ -1776,9 +1780,7 @@ class Logging extends Common_functions {
 	 * @return boolean
 	 */
 	public function changelog_send_mail ($changelog) {
-
-		# initialize tools class
-		if (!is_object($this->Tools)) $this->Tools = new Tools ($this->Database);
+		$this->init_internal_class_objects ();
 
 		# set object
 		$obj_details = $this->object_action == "add" ? $this->object_new : $this->object_old;
