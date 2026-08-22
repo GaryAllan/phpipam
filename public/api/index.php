@@ -23,6 +23,7 @@ require_once __DIR__ . '/../../functions/functions.php';	// functions and object
 # include common API controllers
 require_once __DIR__ . '/../../functions/api/controllers/Common.php';			// common methods
 require_once __DIR__ . '/../../functions/api/controllers/Responses.php';		// exception, header and response handling
+require_once __DIR__ . '/../../functions/api/controllers/User.php';				// authentication and token handling
 
 # Don't corrupt output with php errors!
 disable_php_errors();
@@ -180,7 +181,6 @@ try {
 	if ($Params->controller != "user") {
 		if($app->app_security=="ssl_token" || $app->app_security=="none") {
 			// start auth class and validate connection
-			require_once( __DIR__ . '/../../functions/api/controllers/User.php');				// authentication and token handling
 			$Authentication = new User_controller ($Database, $Tools, $Params, $Response);
 			$Authentication->check_auth ();
 		}
@@ -188,7 +188,6 @@ try {
 		// validate ssl_code
 		if($app->app_security=="ssl_code") {
 			// start auth class and validate connection
-			require_once( __DIR__ . '/../../functions/api/controllers/User.php');				// authentication and token handling
 			$Authentication = new User_controller ($Database, $Tools, $Params, $Response);
 			$Authentication->check_auth_code ($app->app_id);
 		}
@@ -196,9 +195,8 @@ try {
 	// throw token not needed
 	else {
 		// validate ssl_code
-		if($app->app_security=="ssl_code" && in_array($request_method, ['GET', 'HEAD'])) {
+		if ($app->app_security == "ssl_code" && !in_array($request_method, ['GET', 'HEAD'])) {
 			// start auth class and validate connection
-			require_once( __DIR__ . '/../../functions/api/controllers/User.php');				// authentication and token handling
 			$Authentication = new User_controller ($Database, $Tools, $Params, $Response);
 			$Authentication->check_auth_code ($app->app_id);
 
@@ -315,16 +313,15 @@ try {
 $stop = microtime(true);
 
 // add stop time
-if($time_response) {
-    $time = $stop - $start;
-}
-
+$time = $time_response && isset($start) ? $stop - $start : false;
+$nest_custom = isset($app) ? $app->app_nest_custom_fields : false;
 $customFields = isset($controller) ? $controller->custom_fields : [];
+
 //output result
-echo $Response->formulate_result ($result, $time, is_object($app) ? $app->app_nest_custom_fields : null, $customFields);
+echo $Response->formulate_result ($result, $time, $nest_custom, $customFields);
 
 // update access time
-if (is_object($app)) {
+if (isset($app)) {
 	try {
 		$Database->updateObject("api", ["app_id" => $app->app_id, "app_last_access" => date("Y-m-d H:i:s")], 'app_id');
 	} catch (Exception $e) {}

@@ -43,7 +43,7 @@ class Responses extends Result {
 	 * @param bool|int|double $time
 	 * @param bool $nest_custom_fields
 	 * @param array $custom_fields
-	 * @return void
+	 * @return string
 	 */
 	public function formulate_result ($result, $time = false, $nest_custom_fields = false, $custom_fields = []) {
 		// make sure result is array
@@ -81,8 +81,10 @@ class Responses extends Result {
 	 */
 	public function validate_content_type () {
 		// remove charset if provided
-		if(isset($_SERVER['CONTENT_TYPE']))
-		$_SERVER['CONTENT_TYPE'] = array_shift(explode(";", (string) $_SERVER['CONTENT_TYPE']));
+		if (isset($_SERVER['CONTENT_TYPE'])) {
+			$content = explode(";", (string) $_SERVER['CONTENT_TYPE']);
+			$_SERVER['CONTENT_TYPE'] = array_shift($content);
+		}
 		// not set, presume json
 		if( !isset($_SERVER['CONTENT_TYPE']) || strlen((string) @$_SERVER['CONTENT_TYPE'])==0 ) {}
 		// post
@@ -155,7 +157,6 @@ class Responses extends Result {
 	/**
 	 * Function to formulate custom fields as separate item
 	 *
-	 * @method nest_custom_fields
 	 * @param  array              $custom_fields
 	 * @return void
 	 */
@@ -204,7 +205,7 @@ class Responses extends Result {
 	 * Outputs result
 	 *
 	 * @access private
-	 * @return void
+	 * @return string
 	 */
 	private function create_result () {
 		// reorder
@@ -295,6 +296,10 @@ class Responses extends Result {
 	 * @license http://www.php.net/license/index.php#doc-lic
 	 * @license http://creativecommons.org/licenses/by/3.0/
 	 * @license CC-BY-3.0 <http://spdx.org/licenses/CC-BY-3.0>
+	 *
+	 * @param mixed $xmlObject
+	 * @param array $out
+	 * @return array
 	 */
 	public function xml_to_array ( $xmlObject, $out =  [] ) {
 	    foreach ( (array) $xmlObject as $index => $node )
